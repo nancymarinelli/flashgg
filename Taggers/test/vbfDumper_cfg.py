@@ -12,7 +12,7 @@ print options
 
 # maxEvents is the max number of events processed of each file, not globally
 options.maxEvents = -1
-options.inputFiles = "file:myTagOutputFile.root" 
+options.inputFiles = "file:/tmp/nancy/myTagOutputFile.root" 
 options.outputFile = "VBFTagsDump.root" 
 options.parseArguments()
 

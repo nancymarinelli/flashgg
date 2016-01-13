@@ -13,11 +13,11 @@ flashggTagSequence = cms.Sequence(flashggPreselectedDiPhotons
                                   * ( flashggUntagged
                                       + flashggVBFTag
 #                                     + flashggTTHLeptonicTag
-#                                     + flashggVHEtTag
-#                                     + flashggTTHHadronicTag
-#                                     + flashggVHLooseTag
-#                                     + flashggVHTightTag
-#                                     + flashggVHHadronicTag
+                                     + flashggVHEtTag
+                                     + flashggTTHHadronicTag
+                                     + flashggVHLooseTag
+                                     + flashggVHTightTag
+                                     + flashggVHHadronicTag
 					)
                                  * flashggTagSorter
                                   )

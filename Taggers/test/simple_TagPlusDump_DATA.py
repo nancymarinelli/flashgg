@@ -76,6 +76,10 @@ process.TFileService = cms.Service("TFileService",
 
 from flashgg.Taggers.tagsDumpers_cfi import createTagDumper
 import flashgg.Taggers.dumperConfigTools as cfgTools
+
+
+
+
 process.vhEtTagDumper = createTagDumper("VHEtTag")
 process.vhEtTagDumper.dumpTrees =  True
 process.vhEtTagDumper.dumpHistos = True
@@ -83,28 +87,32 @@ process.vhEtTagDumper.dumpHistos = True
 
 
 dipho_variables=["dipho_sumpt      := diPhoton.sumPt",
-                 "dipho_cosphi     := abs(cos(diPhoton.leadingPhoton.phi - diPhoton.subLeadingPhoton.phi))",
+                 "dipho_cosphi     := cos(diPhoton.leadingPhoton.phi - diPhoton.subLeadingPhoton.phi)",
                  "mass             := diPhoton.mass",
+                 "phi              := diPhoton.momentum.phi",
                  "leadPt           := diPhoton.leadingPhoton.pt",
                  "leadEt           := diPhoton.leadingPhoton.et",
                  "leadEta          := diPhoton.leadingPhoton.eta",
                  "leadPhi          := diPhoton.leadingPhoton.phi",
-                 "lead_sieie       := diPhoton.leadingPhoton.sigmaIetaIeta",
-                 "lead_hoe         := diPhoton.leadingPhoton.hadronicOverEm",
+                 "lead_sieie       := diPhoton.leadingPhoton.full5x5_sigmaIetaIeta",
+                 "lead_oldhoe      := diPhoton.leadingPhoton.hadronicOverEm",
+                 "lead_hoe         := diPhoton.leadingPhoton.hadTowOverEm",
                  "lead_sigmaEoE    := diPhoton.leadingPhoton.sigEOverE",
                  "lead_ptoM        := diPhoton.leadingPhoton.pt/diPhoton.mass",
-                 "leadR9           := diPhoton.leadingPhoton.r9",
+                 "leadR9           := diPhoton.leadingPhoton.full5x5_r9",
                  "subleadPt        := diPhoton.subLeadingPhoton.pt",
                  "subleadEt        := diPhoton.subLeadingPhoton.et",
                  "subleadEta       := diPhoton.subLeadingPhoton.eta",
                  "subleadPhi       := diPhoton.subLeadingPhoton.phi",
-                 "sublead_sieie    := diPhoton.subLeadingPhoton.sigmaIetaIeta",
-                 "sublead_hoe      := diPhoton.subLeadingPhoton.hadronicOverEm",
+                 "sublead_sieie    := diPhoton.subLeadingPhoton.full5x5_sigmaIetaIeta",
+                 "sublead_oldhoe   := diPhoton.subLeadingPhoton.hadronicOverEm",
+                 "sublead_hoe      := diPhoton.leadingPhoton.hadTowOverEm",
                  "sublead_sigmaEoE := diPhoton.subLeadingPhoton.sigEOverE",
                  "sublead_ptoM     := diPhoton.subLeadingPhoton.pt/diPhoton.mass",
-                 "subleadR9        := diPhoton.subLeadingPhoton.r9",
+                 "subleadR9        := diPhoton.subLeadingPhoton.full5x5_r9",
                  "leadIDMVA        := diPhoton.leadingView.phoIdMvaWrtChosenVtx",
-                 "subleadIDMVA     := diPhoton.subLeadingView.phoIdMvaWrtChosenVtx",]
+                 "subleadIDMVA     := diPhoton.subLeadingView.phoIdMvaWrtChosenVtx",
+                 "diPhoMVA         := diPhotonMVA.result",]
 
 cfgTools.addCategories(process.vhEtTagDumper,
                        ## categories definition                                                                                                                                                                                  

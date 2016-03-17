@@ -45,20 +45,39 @@ process.source = cms.Source ("PoolSource",fileNames = cms.untracked.vstring(
 process.load("flashgg/Taggers/flashggTagSequence_cfi")
 process.load("flashgg/Taggers/flashggTagTester_cfi")
 
+
 # For debugging
-switchToPreselected = True
+switchToUnPreselected = False
 switchToFinal = False
 switchToPuppi = False
-assert(not switchToPreselected or not switchToFinal)
+switchToReadOld = True
+assert(not switchToUnPreselected or not switchToFinal)
+assert(not switchToReadOld or not switchToUnPreselected)
+assert(not switchToReadOld or not switchToFinal)
 
-if switchToPreselected:
+
+
+if switchToReadOld:
     from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
-    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggDiPhotons"),cms.InputTag("flashggPreselectedDiPhotons"))
+    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggPreselectedDiPhotons"),cms.InputTag("flashggDiPhotonsWithAddedDz"))
+    process.flashggDiPhotonsWithAddedDz = cms.EDProducer('FlashggDiPhotonGenZProducer',
+                                                 DiPhotonTag=cms.InputTag('flashggPreselectedDiPhotons'),
+                                                 GenParticleTag=cms.InputTag( "flashggPrunedGenParticles" ))
+    process.flashggNewPreselectedDiPhotons = cms.Sequence(process.flashggPreselectedDiPhotons*process.flashggDiPhotonsWithAddedDz)
+    process.flashggTagSequence.replace(process.flashggPreselectedDiPhotons,process.flashggNewPreselectedDiPhotons)
+    process.source.fileNames=cms.untracked.vstring("root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring15-ReMiniAOD-BetaV7-25ns/Spring15BetaV7/GluGluHToGG_M-125_13TeV_powheg_pythia8/RunIISpring15-ReMiniAOD-BetaV7-25ns-Spring15BetaV7-v0-RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/151021_152108/0000/myMicroAODOutputFile_2.root")
+    print process.flashggTagSequence
+
+
+
+if switchToUnPreselected:
+    from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
+    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggPreselectedDiPhotons"),cms.InputTag("flashggDiPhotons"))
 
 if switchToFinal:
     from flashgg.MicroAOD.flashggFinalEGamma_cfi import flashggFinalEGamma
     from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
-    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggDiPhotons"),cms.InputTag("flashggFinalEGamma",flashggFinalEGamma.DiPhotonCollectionName.value()))
+    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggPreselectedDiPhotons"),cms.InputTag("flashggFinalEGamma",flashggFinalEGamma.DiPhotonCollectionName.value()))
 
 if switchToPuppi:
     process.flashggUnpackedJets.JetsTag = cms.InputTag("flashggFinalPuppiJets")
@@ -71,11 +90,13 @@ from flashgg.Taggers.flashggTagOutputCommands_cff import tagDefaultOutputCommand
 
 
 
+
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("test.root"))
 
 from flashgg.Taggers.tagsDumpers_cfi import createTagDumper
 import flashgg.Taggers.dumperConfigTools as cfgTools
+
 process.vhEtTagDumper = createTagDumper("VHEtTag")
 process.vhEtTagDumper.dumpTrees =  True
 process.vhEtTagDumper.dumpHistos = True
@@ -83,6 +104,7 @@ process.vhEtTagDumper.dumpHistos = True
 
 
 dipho_variables=["dipho_sumpt      := diPhoton.sumPt",
+                 "dipho_pt         := diPhoton.pt",
                  "dipho_cosphi     := cos(diPhoton.leadingPhoton.phi - diPhoton.subLeadingPhoton.phi)",
                  "mass             := diPhoton.mass",
                  "phi              := diPhoton.momentum.phi",
@@ -164,5 +186,11 @@ from flashgg.MetaData.JobConfig import customize
 # set default options if needed
 customize.setDefault("maxEvents",100)
 customize.setDefault("targetLumi",10e+3)
+customize.setDefault("puTarget",'1.34e+05,6.34e+05,8.42e+05,1.23e+06,2.01e+06,4.24e+06,1.26e+07,4.88e+07,1.56e+08,3.07e+08,4.17e+08,4.48e+08,4.04e+08,3.05e+08,1.89e+08,9.64e+07,4.19e+07,1.71e+07,7.85e+06,4.2e+06,2.18e+06,9.43e+05,3.22e+05,8.9e+04,2.16e+04,5.43e+03,1.6e+03,551,206,80.1,31.2,11.9,4.38,1.54,0.518,0.165,0.0501,0.0144,0.00394,0.00102,0.000251,5.87e-05,1.3e-05,2.74e-06,5.47e-07,1.04e-07,1.86e-08,3.18e-09,5.16e-10,9.35e-11,0,0')
+
+
+# OLD customize.setDefault("puTarget", '1.435e+05,6.576e+05,8.781e+05,1.304e+06,2.219e+06,5.052e+06,1.643e+07,6.709e+07,1.975e+08,3.527e+08,4.44e+08,4.491e+08,3.792e+08,2.623e+08,1.471e+08,6.79e+07,2.748e+07,1.141e+07,5.675e+06,3.027e+06,1.402e+06,5.119e+05,1.467e+05,3.53e+04,8270,2235,721.3,258.8,97.27,36.87,13.73,4.932,1.692,0.5519,0.1706,0.04994,0.01383,0.003627,0.0008996,0.0002111,4.689e-05,9.854e-06,1.959e-06,3.686e-07,6.562e-08,1.105e-08,1.762e-09,2.615e-10,4.768e-11,0,0,0')
+
+
 # call the customization
 customize(process)

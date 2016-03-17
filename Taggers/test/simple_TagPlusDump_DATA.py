@@ -45,20 +45,39 @@ process.source = cms.Source ("PoolSource",fileNames = cms.untracked.vstring(
 process.load("flashgg/Taggers/flashggTagSequence_cfi")
 process.load("flashgg/Taggers/flashggTagTester_cfi")
 
+
 # For debugging
-switchToPreselected = True
+switchToUnPreselected = False
 switchToFinal = False
 switchToPuppi = False
-assert(not switchToPreselected or not switchToFinal)
+switchToReadOld = True
+assert(not switchToUnPreselected or not switchToFinal)
+assert(not switchToReadOld or not switchToUnPreselected)
+assert(not switchToReadOld or not switchToFinal)
 
-if switchToPreselected:
+
+
+if switchToReadOld:
     from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
-    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggDiPhotons"),cms.InputTag("flashggPreselectedDiPhotons"))
+    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggPreselectedDiPhotons"),cms.InputTag("flashggDiPhotonsWithAddedDz"))
+    process.flashggDiPhotonsWithAddedDz = cms.EDProducer('FlashggDiPhotonGenZProducer',
+                                                 DiPhotonTag=cms.InputTag('flashggPreselectedDiPhotons'),
+                                                 GenParticleTag=cms.InputTag( "flashggPrunedGenParticles" ))
+    process.flashggNewPreselectedDiPhotons = cms.Sequence(process.flashggPreselectedDiPhotons*process.flashggDiPhotonsWithAddedDz)
+    process.flashggTagSequence.replace(process.flashggPreselectedDiPhotons,process.flashggNewPreselectedDiPhotons)
+    process.source.fileNames=cms.untracked.vstring("root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring15-ReMiniAOD-BetaV7-25ns/Spring15BetaV7/GluGluHToGG_M-125_13TeV_powheg_pythia8/RunIISpring15-ReMiniAOD-BetaV7-25ns-Spring15BetaV7-v0-RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/151021_152108/0000/myMicroAODOutputFile_2.root")
+    print process.flashggTagSequence
+
+
+
+if switchToUnPreselected:
+    from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
+    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggPreselectedDiPhotons"),cms.InputTag("flashggDiPhotons"))
 
 if switchToFinal:
     from flashgg.MicroAOD.flashggFinalEGamma_cfi import flashggFinalEGamma
     from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
-    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggDiPhotons"),cms.InputTag("flashggFinalEGamma",flashggFinalEGamma.DiPhotonCollectionName.value()))
+    massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggPreselectedDiPhotons"),cms.InputTag("flashggFinalEGamma",flashggFinalEGamma.DiPhotonCollectionName.value()))
 
 if switchToPuppi:
     process.flashggUnpackedJets.JetsTag = cms.InputTag("flashggFinalPuppiJets")
@@ -71,15 +90,22 @@ from flashgg.Taggers.flashggTagOutputCommands_cff import tagDefaultOutputCommand
 
 
 
+# HLT requirements 
+from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
+process.hltHighLevel= hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95_v1",
+                                                                "HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_DoublePixelVeto_Mass55_v1",
+                                                                "HLT_Diphoton30EB_18EB_R9Id_OR_IsoCaloId_AND_HE_R9Id_DoublePixelVeto_Mass55_v1"))
+
+#process.hltHighLevel= hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95_v1"))
+
+
+
+
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("test.root"))
 
 from flashgg.Taggers.tagsDumpers_cfi import createTagDumper
 import flashgg.Taggers.dumperConfigTools as cfgTools
-
-
-
-
 process.vhEtTagDumper = createTagDumper("VHEtTag")
 process.vhEtTagDumper.dumpTrees =  True
 process.vhEtTagDumper.dumpHistos = True
@@ -87,6 +113,7 @@ process.vhEtTagDumper.dumpHistos = True
 
 
 dipho_variables=["dipho_sumpt      := diPhoton.sumPt",
+                 "dipho_pt         := diPhoton.pt",
                  "dipho_cosphi     := cos(diPhoton.leadingPhoton.phi - diPhoton.subLeadingPhoton.phi)",
                  "mass             := diPhoton.mass",
                  "phi              := diPhoton.momentum.phi",
@@ -159,7 +186,8 @@ cfgTools.addCategories(process.vhEtTagDumper,
 
 
 
-process.p = cms.Path(process.flashggTagSequence*process.flashggTagTester*process.vhEtTagDumper)
+process.p = cms.Path(process.hltHighLevel*process.flashggTagSequence*process.flashggTagTester*process.vhEtTagDumper)
+
 
 #process.e = cms.EndPath(process.out)
 

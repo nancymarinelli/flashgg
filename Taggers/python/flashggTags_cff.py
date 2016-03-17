@@ -81,6 +81,7 @@ flashggVBFTag = cms.EDProducer("FlashggVBFTagProducer",
                                )
 
 
+
 flashggVHEtTag = cms.EDProducer("FlashggVHEtTagProducer",
                                 DiPhotonTag=cms.InputTag('flashggPreselectedDiPhotons'),
                                 SystLabel=cms.string(""),

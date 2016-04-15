@@ -87,12 +87,13 @@ flashggVHEtTag = cms.EDProducer("FlashggVHEtTagProducer",
                                 SystLabel=cms.string(""),
                                 GenParticleTag=cms.InputTag( "flashggPrunedGenParticles" ),
                                 MVAResultTag=cms.InputTag('flashggDiPhotonMVA'),
-                                METTag=cms.InputTag('slimmedMETs'),   
+         #                       METTag=cms.InputTag('slimmedMETs'),
+                                METTag=cms.InputTag('slimmedMETs','','FLASHggMicroAOD'),  
                                 leadPhoOverMassThreshold = cms.double(0.375),
                                 subleadPhoOverMassThreshold = cms.double(0.25),
-                                metPtThreshold = cms.double(70),
-                                diphoMVAThreshold= cms.double(-1.0),
-                                phoIdMVAThreshold= cms.double(-0.9)
+                                metPtThreshold = cms.double(0.),
+                                diphoMVAThreshold= cms.double(-1.),
+                                phoIdMVAThreshold= cms.double(-1.)
                                 #Boundaries=cms.vdouble(0.21,0.6,0.81)
 )
 

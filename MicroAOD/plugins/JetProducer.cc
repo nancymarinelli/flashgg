@@ -98,7 +98,29 @@ namespace flashgg {
         for( unsigned int i = 0 ; i < jets->size() ; i++ ) {
             Ptr<pat::Jet> pjet = jets->ptrAt( i );
             flashgg::Jet fjet = flashgg::Jet( *pjet );
+
+            //store btagging userfloats
+            int nSecVertices = pjet->tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices();
+            float vtxMass = -999, vtxPx = -999, vtxPy = -999, vtx3DVal = -999, vtx3DSig = -999;
+            int vtxNTracks = -1;
+            if(nSecVertices > 0){
+                vtxNTracks = pjet->tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).numberOfSourceCandidatePtrs();
+                vtxMass = pjet->tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).p4().mass();
+                vtxPx = pjet->tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).p4().px();
+                vtxPy = pjet->tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).p4().py();
+                vtx3DVal = pjet->tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0).value();
+                vtx3DSig = pjet->tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0).significance();
+            }
+
+            fjet.addUserFloat("nSecVertices", nSecVertices);
+            fjet.addUserFloat("vtxNTracks", vtxNTracks);
+            fjet.addUserFloat("vtxMass", vtxMass);
+            fjet.addUserFloat("vtxPx", vtxPx);
+            fjet.addUserFloat("vtxPy", vtxPy);
+            fjet.addUserFloat("vtx3DVal", vtx3DVal);
+            fjet.addUserFloat("vtx3DSig", vtx3DSig);
             
+            float leadTrackPt_ = -999., softLepPt = -999., softLepRatio = -999., softLepDr = -999.;
             if (computeSimpleRMS) {
                 float sumPtDrSq = 0.;
                 float sumPtSq = 0.;
@@ -112,11 +134,26 @@ namespace flashgg {
                     float candDr   = reco::deltaR(*kcand,fjet);
                     sumPtDrSq += candPt*candPt*candDr*candDr;
                     sumPtSq += candPt*candPt;
+
+                    if(lPack->charge() != 0 && candPt > leadTrackPt_) leadTrackPt_ = candPt;
+
+                    if(abs(lPack->pdgId()) == 11 || abs(lPack->pdgId()) == 13) {
+                        if(candPt > softLepPt){
+                            softLepPt = candPt;
+                            softLepRatio = candPt/pjet->pt();
+                            softLepDr = candDr;
+                        }
+                    }
                 }
                 
                 if (sumPtSq == 0.) throw cms::Exception( "NoConstituents" ) << " For jet " << i << " we get sumPtSq of 0!" << std::endl;
                 fjet.setSimpleRMS( sumPtDrSq / sumPtSq );
             }
+
+            fjet.addUserFloat("leadTrackPt", leadTrackPt_);
+            fjet.addUserFloat("softLepPt", softLepPt);
+            fjet.addUserFloat("softLepRatio", softLepRatio);
+            fjet.addUserFloat("softLepDr", softLepDr);
             
             //--- Retrieve the q/g likelihood
             float qgLikelihood = -99.0;

@@ -27,7 +27,7 @@ parser = OptionParser(option_list=[
                     ),
         make_option("-p","--pset",
                     action="store", dest="parameterSet", type="string",
-                    default="../../MicroAOD/test/microAODstd.py", # FIXME should move it to production eventually
+                    default="../../MicroAOD/test/microAODstdMETsyst.py", # FIXME should move it to production eventually
                     help="CMSSW parameter set. default: %default", 
                     ),
         make_option("-t","--crabTemplate",
@@ -230,6 +230,8 @@ if options.createCrabConfig:
     print ("Parameter set: %s\nflashggVersion: %s\ncrab template: %s\n" % (options.parameterSet,flashggVersion,options.crabTemplate))
     print ("Copying over parameter set")
     Popen(['cp', '-p', options.parameterSet, './'])
+    Popen(['cp', '-p', '/afs/cern.ch/work/n/nancy/private/HiggsRunII/CMSSW_7_6_3_patch2/src/flashgg/MicroAOD/test/Fall15_25nsV2_DATA.db', './'])
+    Popen(['cp', '-p', '/afs/cern.ch/work/n/nancy/private/HiggsRunII/CMSSW_7_6_3_patch2/src/flashgg/MicroAOD/test/Fall15_25nsV2_MC.db', './'])
     print ("Storing options into config.json")
     cfg = open("config.json","w+")
     cfg.write( dumpCfg(options) )
@@ -339,5 +341,3 @@ if options.createCrabConfig:
         for outfile in outfiles:
             outfile.close()
 
-
-        

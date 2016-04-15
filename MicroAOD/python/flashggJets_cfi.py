@@ -87,8 +87,10 @@ def addFlashggPFCHSJets(process,
     genJetCollection = cms.InputTag('slimmedGenJets'),
     genParticles     = cms.InputTag('prunedGenParticles'),
     # jet param
-    algo = 'AK', rParam = 0.4
+    algo = 'AK', rParam = 0.4,
+    btagInfos =  ['pfImpactParameterTagInfos','pfSecondaryVertexTagInfos'] #Extra btagging info
   )
+  getattr( process, 'patJetsAK4PFCHSLeg' + label).addTagInfos = True #Add btagging info
   
   #adjust PV used for Jet Corrections
   #process.patJetCorrFactorsAK4PFCHSLeg.primaryVertices = "offlineSlimmedPrimaryVertices"
